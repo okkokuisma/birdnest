@@ -13,6 +13,7 @@ app.use(express.json());
 const PORT = 3001;
 
 app.get('/drones', async (_req, res) => {
+  console.log('ping');
   const response = await axios.get<string>('https://assignments.reaktor.com/birdnest/drones');
   if (!response.data) {
     return res.status(400).end();
