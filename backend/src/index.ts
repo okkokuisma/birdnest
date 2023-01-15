@@ -3,12 +3,12 @@ import express from 'express';
 import cors from 'cors';
 
 import { fetchNdz } from './utils';
+import { SERVER_PORT } from './config';
+import { testConnection } from './db/initDb';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const PORT = 3001;
 
 // app.get('/drones', async (_req, res) => {
 //   const response = await fetchDrones();
@@ -26,6 +26,14 @@ app.get('/ndz', async (_req, res) => {
   return res.json(pilots);
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const start = () => {
+  testConnection()
+    .then(() => {
+      app.listen(SERVER_PORT, () => {
+        console.log(`Server running on port ${SERVER_PORT}`);
+      });
+    })
+    .catch((error) => console.log(error));
+};
+
+start();
