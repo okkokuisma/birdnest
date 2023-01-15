@@ -6,7 +6,12 @@ export interface Drone {
   ipv4: string,
   ipv6: string,
   firmware: string,
-  positionY: string,
-  positionX: string,
-  altitude: string
+  coordinates: Coordinates;
+  altitude: number,
+  timestamp: string;
+}
+
+export interface Coordinates {
+  x: number;
+  y: number;
 }
