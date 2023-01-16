@@ -9,6 +9,17 @@ export interface Drone {
   coordinates: Coordinates;
   altitude: number,
   timestamp: string;
+  distanceToNest?: number;
+}
+
+export interface Pilot {
+  pilotId: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  email?: string;
+  lastUpdate: Date;
+  distanceToNest: number;
 }
 
 export interface Coordinates {

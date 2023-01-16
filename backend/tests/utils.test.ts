@@ -1,5 +1,9 @@
-import { isInNdz } from '../src/utils';
+import { calcDistanceToNest } from '../src/utils';
 import { Coordinates } from '../../types';
+
+const isInNdz = (coordinates: Coordinates) => {
+  return calcDistanceToNest(coordinates) <= 100000;
+};
 
 const droneCoordinates: Coordinates[] = [
   {

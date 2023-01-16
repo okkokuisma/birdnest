@@ -7,7 +7,10 @@
     "tsc": "tsc",
     "dev": "ts-node-dev src/index.ts",
     "lint": "eslint --ext .ts .",
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "migrate:up": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down",
+    "migrate:create": "node-pg-migrate create"
   },
   "author": "Okko Kuisma",
   "license": "ISC",
@@ -16,6 +19,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "node-pg-migrate": "^6.2.2",
     "pg": "^8.8.0",
     "xml-js": "^1.6.11"
   },

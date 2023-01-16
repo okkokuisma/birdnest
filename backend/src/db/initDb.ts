@@ -7,15 +7,16 @@ import {
   DB_PORT
 } from '../config';
 
-const pool = new Pool({
+const dbPool = new Pool({
     max: 20,
     connectionString: `postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${POSTGRES_DB}`,
     idleTimeoutMillis: 30000
 });
 
 export const testConnection = async () => {
-  await pool.query('SELECT NOW()');
-  await pool.end();
+  const client = await dbPool.connect();
+  await client.query('SELECT NOW()');
+  client.release();
 };
 
-export default pool;
+export default dbPool;

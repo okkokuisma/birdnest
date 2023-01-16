@@ -1,8 +1,9 @@
 import xmlparser from 'xml-js';
 import axios from 'axios';
 
-import { Coordinates, Drone } from '../../types';
+import { Coordinates, Drone, Pilot } from '../../types';
 import { ndzRadius, monadiCoordinates } from './constants';
+import { getOne, createPilot, updatePilot } from './db/pilotService';
 
 interface UnparsedDrone {
   serialNumber: { _text: string },
@@ -87,36 +88,67 @@ export const parseDroneXml = (unparsed: string): Drone[] => {
   return drones;
 };
 
-export const isInNdz = (droneCoordinates: Coordinates): boolean => {
+export const calcDistanceToNest = (droneCoordinates: Coordinates): number => {
   const distanceFromMonadi =
     Math.sqrt(Math.pow(monadiCoordinates.x - droneCoordinates.x, 2) + Math.pow(monadiCoordinates.y - droneCoordinates.y, 2));
-  console.log(distanceFromMonadi);
-  return distanceFromMonadi <= ndzRadius;
+  return distanceFromMonadi;
 };
 
 export const filterNdz = (drones: Drone[]): Drone[] => {
-  return drones.filter((drone) => isInNdz(drone.coordinates));
+  return drones.reduce((result, drone) => {
+    const distanceToNest = calcDistanceToNest(drone.coordinates);
+    if (distanceToNest <= ndzRadius) {
+      result.push({ ...drone, distanceToNest});
+    }
+    return result;
+  }, [] as Drone[]);
 };
 
 const fetchDrones = async () => {
-  return await axios.get<string>('https://assignments.reaktor.com/birdnest/drones');
-};
-
-const fetchPilot = async (serialNumber: string) => {
-  const response = await axios.get<string>(`https://assignments.reaktor.com/birdnest/pilots/${serialNumber}`);
+  const response = await axios.get<string>('https://assignments.reaktor.com/birdnest/drones');
   return response.data;
 };
 
-export const fetchNdz = async () => {
-  const unparsedDrones = await fetchDrones();
-  const parsedDrones = parseDroneXml(unparsedDrones.data);
-  console.log(parsedDrones);
-  const dronesInNdz = filterNdz(parsedDrones);
-  console.log(dronesInNdz);
+const fetchPilot = async (serialNumber: string) => {
+  const response = await axios.get<Pilot>(`https://assignments.reaktor.com/birdnest/pilots/${serialNumber}`);
+  return response.data;
+};
 
-  const pilotsInNdz = await Promise.all(dronesInNdz.map(async (drone) => {
-    return await fetchPilot(drone.serialNumber);
+export const fetchNdz = async (): Promise<Pilot[]> => {
+  try {
+    const unparsedDrones = await fetchDrones();
+    const parsedDrones = parseDroneXml(unparsedDrones);
+    // console.log(parsedDrones);
+    const dronesInNdz = filterNdz(parsedDrones);
+    // console.log(dronesInNdz);
+
+    const pilotsInNdz = await Promise.all(dronesInNdz.map(async (drone) => {
+      const pilot = await fetchPilot(drone.serialNumber);
+      return drone.distanceToNest? { ...pilot, distanceToNest: drone.distanceToNest } : pilot;
+    }));
+
+    return pilotsInNdz;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};
+
+export const updateDatabase = async (pilots: Pilot[]) => {
+  void await Promise.all(pilots.map(async (pilot) => {
+    const pilotInstance = await getOne(pilot.pilotId);
+
+    if (pilotInstance && pilot.distanceToNest < pilotInstance.distanceToNest) {
+      void await updatePilot(pilot.pilotId, pilot.distanceToNest);
+    }
+
+    if (!pilotInstance) {
+      void await createPilot(pilot);
+    }
   }));
+};
 
-  return pilotsInNdz;
+export const fetchAndUpdate = async () => {
+  const pilotsInNdz = await fetchNdz();
+  void await updateDatabase(pilotsInNdz);
 };
