@@ -137,8 +137,8 @@ export const fetchNdz = async (): Promise<Pilot[]> => {
 export const updateDatabase = async (pilots: Pilot[]) => {
   void await Promise.all(pilots.map(async (pilot) => {
     const pilotInstance = await getOne(pilot.pilotId);
-
-    if (pilotInstance && pilot.distanceToNest < pilotInstance.distanceToNest) {
+    console.log('HELOU' + JSON.stringify(pilotInstance));
+    if (pilotInstance && (pilot.distanceToNest < pilotInstance.distance_to_nest)) {
       void await updatePilot(pilot.pilotId, pilot.distanceToNest);
     }
 

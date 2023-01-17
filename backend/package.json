@@ -6,6 +6,7 @@
   "scripts": {
     "tsc": "tsc",
     "dev": "ts-node-dev src/index.ts",
+    "start": "node dist/backend/src/index.js",
     "lint": "eslint --ext .ts .",
     "test": "jest --verbose",
     "migrate:up": "node-pg-migrate up",

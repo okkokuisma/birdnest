@@ -38,7 +38,7 @@ export const getAll = async (date: Date): Promise<Pilot[]> => {
 export const getOne = async (id: string) => {
   const client = await dbPool.connect();
   try {
-    const res = await client.query<Pilot>('SELECT * FROM pilots WHERE pilot_id = $1', [id]);
+    const res = await client.query<PilotDbInstance>('SELECT * FROM pilots WHERE pilot_id = $1', [id]);
     return res.rows[0];
   } catch (err) {
     console.log(err);
@@ -51,13 +51,14 @@ export const createPilot = async (values: Pilot) => {
   const { pilotId, firstName, lastName, phoneNumber, email, distanceToNest } = values;
   const client = await dbPool.connect();
   try {
-    const res = await client.query<Pilot>(
+    const res = await client.query<PilotDbInstance>(
       'INSERT INTO pilots(pilot_id, first_name, last_name, phone_number, email, distance_to_nest, last_update) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [pilotId, firstName, lastName, phoneNumber, email, distanceToNest, new Date()]
     );
     console.log('CREATE:' + JSON.stringify(res.rows[0]));
     return res.rows[0];
   } catch (err) {
+    console.log('ERROR CREATING: ' + JSON.stringify(values));
     console.log(err);
   } finally {
     client.release();
@@ -67,13 +68,14 @@ export const createPilot = async (values: Pilot) => {
 export const updatePilot = async (id: string, distance: number) => {
   const client = await dbPool.connect();
   try {
-    const res = await client.query<Pilot>(
+    const res = await client.query<PilotDbInstance>(
       'UPDATE pilots SET (distance_to_nest, last_update) = ($1, $2) WHERE pilot_id = $3 RETURNING *',
       [distance, new Date(), id]
     );
     console.log('UPDATE:' + JSON.stringify(res.rows[0]));
     return res.rows[0];
   } catch (err) {
+    console.log('ERROR UPDATING:' + id);
     console.log(err);
   } finally {
     client.release();

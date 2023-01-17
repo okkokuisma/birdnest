@@ -24,3 +24,5 @@ yarn-error.log*
 
 db_data
 .env
+build
+dist

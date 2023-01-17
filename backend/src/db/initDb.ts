@@ -1,15 +1,10 @@
 import { Pool } from 'pg';
-import {
-  POSTGRES_USER,
-  POSTGRES_PASSWORD,
-  POSTGRES_DB,
-  DB_HOST,
-  DB_PORT
-} from '../config';
+import { DATABASE_URL } from '../config';
+import pgMigrate from 'node-pg-migrate';
 
 const dbPool = new Pool({
     max: 20,
-    connectionString: `postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${POSTGRES_DB}`,
+    connectionString: DATABASE_URL,
     idleTimeoutMillis: 30000
 });
 
@@ -17,6 +12,17 @@ export const testConnection = async () => {
   const client = await dbPool.connect();
   await client.query('SELECT NOW()');
   client.release();
+};
+
+export const runMigrations = async () => {
+  if (DATABASE_URL) {
+    void await pgMigrate({
+      databaseUrl: DATABASE_URL,
+      migrationsTable: 'pgmigrations',
+      dir: 'migrations',
+      direction: 'up'
+    });
+  }
 };
 
 export default dbPool;
