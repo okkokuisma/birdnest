@@ -7,6 +7,5 @@ const baseUrl = process.env.NODE_ENV === 'development'
 
 export const getPilotsInNdz = async () => {
   const response = await axios.get<Pilot[]>(`${baseUrl}/ndz`);
-  console.log(response.data);
   return response.data;
 };

@@ -1,28 +1,17 @@
-// import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 
 import './App.css';
 import { getPilotsInNdz } from './pilotService';
 import { Pilot } from '../../types';
 
-// const PilotListHeader = () => {
-//   return (
-//     <div className='PilotListRow' id='PilotListHeader'>
-//       <div className='grid-container'>
-//         <div>Name</div>
-//       </div>
-//       <div className='grid-container'>
-//         <div>Phone number</div>
-//       </div>
-//       <div className='grid-container'>
-//         <div>Email</div>
-//       </div>
-//       <div className='grid-container'>
-//         <div>Distance to Monadi</div>
-//       </div>
-//     </div>
-//   );
-// };
+const Footer = () => {
+  return (
+    <div className='footer'>
+      <span>Source code can be found&nbsp;</span>
+      <a href='https://github.com/okkokuisma/birdnest'>here.</a>
+    </div>
+  )
+}
 
 const PilotListRow = ({ pilot }: { pilot: Pilot; }) => {
   const distanceHighlight = pilot.distanceToNest < 20000
@@ -59,7 +48,6 @@ const PilotList = () => {
 
   return (
     <ul className='PilotList'>
-      {/* <PilotListHeader /> */}
       {data.map((pilot) => (
         <li key={pilot.pilotId}>
           <PilotListRow pilot={pilot} />
@@ -74,6 +62,7 @@ const App = () => {
     <div className="App">
       <h1>Naughty pilots in the NDZ</h1>
       <PilotList/>
+      <Footer />
     </div>
   );
 };

@@ -15,17 +15,9 @@
 
 .PilotListRow {
   display: grid;
-  /* grid-template-columns: 1fr 1fr 1fr 1fr; */
   text-align: left;
   border-bottom: 1pt black solid;
   margin: 5px 0;
-}
-
-div#PilotListHeader.PilotListRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  text-align: left;
-  font-weight: bold;
 }
 
 @media screen and (min-width: 800px) and (max-width: 1199px) {
@@ -50,5 +42,11 @@ div#PilotListHeader.PilotListRow {
   .grid-container:last-child {
     text-align: right;
   }
+}
+
+.footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
