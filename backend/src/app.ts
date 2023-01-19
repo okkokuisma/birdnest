@@ -1,14 +1,14 @@
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
+import cors from 'cors';
 
 import { FRONTEND_BUILD_DIR } from './config';
 import ndzmRouter from './controllers/ndz';
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+app.use(express.json());
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 app.use('/api/ndz', ndzmRouter);
 app.use(express.static('build'));
