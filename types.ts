@@ -26,3 +26,10 @@ export interface Coordinates {
   x: number;
   y: number;
 }
+
+export type QueryParams = Partial<Record<string, string | number | Date>>;
+
+export interface PilotQueryParams extends QueryParams {
+  order?: string;
+  date: Date;
+}

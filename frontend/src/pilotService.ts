@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { Pilot } from '../../types';
+import { Pilot, QueryParams } from '../../types';
 
 const baseUrl = process.env.NODE_ENV === 'development'
   ? process.env.REACT_APP_BACKEND_URL
-  : '/api'
+  : '/api';
 
-export const getPilotsInNdz = async () => {
-  const response = await axios.get<Pilot[]>(`${baseUrl}/ndz`);
+export const getPilotsInNdz = async (params: QueryParams) => {
+  const response = await axios.get<Pilot[]>(`${baseUrl}/ndz`, {params});
   return response.data;
 };

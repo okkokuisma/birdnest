@@ -1,21 +1,21 @@
 import xmlparser from 'xml-js';
 import axios from 'axios';
 
-import { Coordinates, Drone, Pilot } from '../../types';
+import { Coordinates, Drone, Pilot, PilotQueryParams } from '../../types';
 import { ndzRadius, monadiCoordinates } from './constants';
 import { getOne, createPilot, updatePilot } from './db/pilotService';
 
 interface UnparsedDrone {
-  serialNumber: { _text: string },
-  model: { _text: string },
-  manufacturer: { _text: string },
-  mac: { _text: string },
-  ipv4: { _text: string },
-  ipv6: { _text: string },
-  firmware: { _text: string },
-  positionY: { _text: string },
-  positionX: { _text: string },
-  altitude: { _text: string }
+  serialNumber: { _text: unknown },
+  model: { _text: unknown },
+  manufacturer: { _text: unknown },
+  mac: { _text: unknown },
+  ipv4: { _text: unknown },
+  ipv6: { _text: unknown },
+  firmware: { _text: unknown },
+  positionY: { _text: unknown },
+  positionX: { _text: unknown },
+  altitude: { _text: unknown }
 }
 
 export interface UnparsedDroneXML extends xmlparser.ElementCompact {
@@ -51,6 +51,28 @@ const parseNumber = (content: unknown): number => {
   return content;
 };
 
+const isDate = (date: unknown): date is Date => {
+  return date instanceof Date;
+};
+
+const parseDate = (date: unknown): Date => {
+  if (!date || !isDate(date)) {
+      throw new Error('Incorrect or missing date: ' + date);
+  }
+  return date;
+};
+
+export const parsePilotQueryParams = (query: { order?: unknown; date?: unknown; }): PilotQueryParams => {
+  let { order, date } = query;
+  if (!date) date = new Date(Date.now() - 10 * 60 * 1000);
+  if (!order) order = "DESC";
+
+  return {
+    order: parseString(order),
+    date: parseDate(date)
+  };
+};
+
 const parseDroneAttributes = (drone: UnparsedDrone) => {
   return {
     serialNumber: parseString(drone.serialNumber._text),
@@ -61,10 +83,10 @@ const parseDroneAttributes = (drone: UnparsedDrone) => {
     ipv6: parseString(drone.ipv6._text),
     firmware: parseString(drone.firmware._text),
     coordinates: {
-      y: parseNumber(parseFloat(drone.positionY._text)),
-      x: parseNumber(parseFloat(drone.positionX._text)),
+      y: parseNumber(parseFloat(parseString(drone.positionY._text))),
+      x: parseNumber(parseFloat(parseString(drone.positionX._text))),
     },
-    altitude: parseNumber(parseFloat(drone.altitude._text)),
+    altitude: parseNumber(parseFloat(parseString(drone.altitude._text))),
   };
 };
 
@@ -118,9 +140,7 @@ export const fetchNdz = async (): Promise<Pilot[]> => {
   try {
     const unparsedDrones = await fetchDrones();
     const parsedDrones = parseDroneXml(unparsedDrones);
-    // console.log(parsedDrones);
     const dronesInNdz = filterNdz(parsedDrones);
-    // console.log(dronesInNdz);
 
     const pilotsInNdz = await Promise.all(dronesInNdz.map(async (drone) => {
       const pilot = await fetchPilot(drone.serialNumber);
@@ -137,7 +157,7 @@ export const fetchNdz = async (): Promise<Pilot[]> => {
 export const updateDatabase = async (pilots: Pilot[]) => {
   void await Promise.all(pilots.map(async (pilot) => {
     const pilotInstance = await getOne(pilot.pilotId);
-    console.log('HELOU' + JSON.stringify(pilotInstance));
+
     if (pilotInstance && (pilot.distanceToNest < pilotInstance.distance_to_nest)) {
       void await updatePilot(pilot.pilotId, pilot.distanceToNest);
     }

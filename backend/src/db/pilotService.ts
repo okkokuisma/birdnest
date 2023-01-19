@@ -1,5 +1,6 @@
 import dbPool from './initDb';
-import { Pilot } from '../../../types';
+import pgFormat from 'pg-format';
+import { Pilot, PilotQueryParams } from '../../../types';
 
 interface PilotDbInstance {
   id: number;
@@ -12,10 +13,12 @@ interface PilotDbInstance {
   last_update: Date;
 }
 
-export const getAll = async (date: Date): Promise<Pilot[]> => {
+export const getAll = async (params: PilotQueryParams): Promise<Pilot[]> => {
   const client = await dbPool.connect();
   try {
-    const res = await client.query<PilotDbInstance>('SELECT * FROM pilots WHERE last_update >= $1', [date]);
+    const { date, order } = params;
+    const sql = pgFormat('SELECT * FROM pilots WHERE last_update >= %L ORDER BY last_update %s', date, order);
+    const res = await client.query<PilotDbInstance>(sql);
     return res.rows.map((row) => {
       return {
         pilotId: row.pilot_id,
@@ -55,7 +58,6 @@ export const createPilot = async (values: Pilot) => {
       'INSERT INTO pilots(pilot_id, first_name, last_name, phone_number, email, distance_to_nest, last_update) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [pilotId, firstName, lastName, phoneNumber, email, distanceToNest, new Date()]
     );
-    console.log('CREATE:' + JSON.stringify(res.rows[0]));
     return res.rows[0];
   } catch (err) {
     console.log('ERROR CREATING: ' + JSON.stringify(values));
@@ -72,7 +74,6 @@ export const updatePilot = async (id: string, distance: number) => {
       'UPDATE pilots SET (distance_to_nest, last_update) = ($1, $2) WHERE pilot_id = $3 RETURNING *',
       [distance, new Date(), id]
     );
-    console.log('UPDATE:' + JSON.stringify(res.rows[0]));
     return res.rows[0];
   } catch (err) {
     console.log('ERROR UPDATING:' + id);
